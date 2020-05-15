@@ -1,0 +1,40 @@
+{
+  "name": "discord-mongodb-economy",
+  "version": "0.1.2",
+  "description": "discord-mongodb-economy is an economy system using mongodb",
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "node ./test/connexion.js"
+  },
+  "author": "Mr¤KayJayDee <killian.dalcin@gmail.com> (https://github.com/Mr-KayJayDee)",
+  "license": "MIT",
+  "dependencies": {
+    "mongoose": "^5.9.14"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mr-KayJayDee/discord-mongodb-economy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Mr-KayJayDee/discord-mongodb-economy/issues"
+  },
+  "homepage": "https://github.com/Mr-KayJayDee/discord-mongodb-economy#readme",
+  "keywords": [
+    "discord",
+    "economy",
+    "discord.js",
+    "bot",
+    "bots",
+    "leveling",
+    "levels",
+    "discord-levels",
+    "discord-xp",
+    "xp",
+    "mongo",
+    "mongoose",
+    "mongodb",
+    "discord-economy",
+    "discord-eco",
+    "framework"
+  ]
+}
