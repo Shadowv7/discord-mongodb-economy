@@ -4,7 +4,13 @@ const MemberData = require("../../models/guildMember");
 
 const UserData = require("../../models/user");
 
+const DJSLib = require("discord.js").version;
+
 class DiscordMongoDBEconomy {
+
+    constructor() {
+        throw new Error('Not a constructor');
+    }
 
     /**
      * Connect to the mongoDB database
@@ -160,6 +166,51 @@ class DiscordMongoDBEconomy {
         if (!member) return false;
 
         return member;
+    }
+
+    /**
+     * Get the raw data of the leaderboard
+     * @param {string} guildId - The id of the guild
+     * @param {number} limit - The limit of members displayed on the leaderboard
+     */
+    static async getLeaderBoard(guildId, limit) {
+        if (!guildId) throw new TypeError("A guild id must be specified.");
+        if (isNaN(limit)) throw new TypeError("The limit must be a number.")
+        if (limit < 1) throw new TypeError("The limit cannot be lower than 1.")
+        if (!limit) limit = "10";
+
+        var table = await MemberData.find({
+            guildID: guildId
+        }).sort([
+            ['xp', 'descending']
+        ]).exec();
+
+        return table.slice(0, limit);
+    }
+
+    /**
+     * Convert the raw leaderboard into a readeable
+     * @param {string} client - The user's discord client
+     * @param {array} rawLeaderBoard - The raw leaderboard
+     */
+    static convertLeaderBoard(client, rawLeaderBoard) {
+        if (!client) throw new TypeError("A client must be specified.");
+        if (!rawLeaderBoard) throw new TypeError("A raw leaderboard must be specified.");
+
+        if (rawLeaderBoard.length < 1) return [];
+
+        const convertedArray = [];
+
+        rawLeaderBoard.map(key => convertedArray.push({
+            guildID: key.guildID,
+            memberID: key.memberID,
+            xp: key.xp,
+            level: key.level,
+            position: (rawLeaderBoard.findIndex(i => i.guildID === key.guildID && i.memberID === key.memberID) + 1),
+            username: DJSLib.startsWith("12") ? (client.users.cache.get(key.memberID) ? client.users.cache.get(key.memberID).username : "Unknown") : (client.users.get(key.memberID) ? client.users.get(key.memberID).username : "Unknown"),
+            discriminator: DJSLib.startsWith("12") ? (client.users.cache.get(key.memberID) ? client.users.cache.get(key.memberID).discriminator : "0000") : (client.users.get(key.memberID) ? client.users.get(key.memberID).discriminator : "0000"),
+        }));
+        return convertedArray;
     }
 }
 

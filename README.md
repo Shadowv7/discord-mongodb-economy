@@ -141,6 +141,31 @@ const member = await mongoeconomy.fetchMember(<MemberId>, <GuildId>)
 Promise<Boolean>
 ``
 
+**getLeaderBoard()**
+
+Get the raw data of the guild leaderboard.
+
+```js
+const rawData = await mongoeconomy.getLeaderBoard(<GuildID>, <Limit>)
+```
+> **\<Limit\>** need to be a number.
+- Expected output :
+``
+Promise<Array [Objects]>
+``
+
+**convertLeaderBoard()**
+
+Convert the raw data of the leaderboard.
+
+```js
+const rawData = await mongoeconomy.convertLeaderBoard(<Discord Client>, <RawData>)
+```
+> **\<RawData\>** the getLeaderBoard() output
+- Expected output :
+``
+Array [Objects]
+``
 
 # Full bot example using all the methods
 
@@ -195,6 +220,14 @@ bot.on("message", async (message) => {
         let user = await mongoeconomy.fetchMember(mention.id, message.guild.id);
         if (!user) return message.channel.send("You haven't earned any xp or level...")
         message.channel.send(`You have ${user.xp} points and you are at level ${user.level}.`)
+    }
+
+    if (message.content === "*leaderboard") {
+        let raw = await mongoeconomy.getLeaderBoard(message.guild.id, 10);
+        let data = await mongoeconomy.convertLeaderBoard(bot, raw);
+
+        let leaderboard = data.map(e => `${e.position}. ${e.username}#${e.discriminator}\nLevel: ${e.level}\nXP: ${e.xp.toLocaleString()}\n`);
+        message.channel.send(leaderboard)
     }
 })
 
