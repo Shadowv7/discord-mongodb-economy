@@ -1,10 +1,6 @@
 {
   "name": "discord-mongodb-economy",
-<<<<<<< HEAD
-  "version": "0.1.5",
-=======
   "version": "0.1.4",
->>>>>>> dev
   "description": "discord-mongodb-economy is an economy system using mongodb",
   "main": "./src/index.js",
   "scripts": {
