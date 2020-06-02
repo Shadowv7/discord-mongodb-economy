@@ -240,6 +240,33 @@ class DiscordMongoDBEconomy {
 
         return member
     }
+
+    /**
+     * Set an amount of level for a member (reset the current xp)
+     * @param {string} memberId - The id of the member
+     * @param {string} guildId - The id of the guild
+     * @param {number} xpToSet - Amount of levels to set
+     */
+    static async setLevel(memberId, guildId, levelToSet) {
+        if (!memberId) throw new TypeError("A member id must be specified.");
+        if (!guildId) throw new TypeError("A guild id must be specified.");
+        if (!levelToSet) throw new TypeError("An amount of level must be specified.");
+        if (levelToSet < 1) throw new TypeError("The given level amount cannot be lower than 1.")
+        if (isNaN(levelToSet)) throw new TypeError("The given level amount must be a number.")
+    
+        let member = await MemberData.findOne({
+            memberID: memberId,
+            guildID: guildId
+        });
+        if (!member) return false;
+    
+        member.level = levelToSet;
+        member.xp = levelToSet * levelToSet * 100;
+    
+        member.save().catch(e => console.log(`Failed to set level: ${e}`) );
+    
+        return member;
+      }
 }
 
 

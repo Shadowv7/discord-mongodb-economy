@@ -103,7 +103,7 @@ Promise<Object>
 
 **attributeXp()**
 
-Add an amount of xp to an user. It re-calculate the level for the final amount of xp.
+Add an amount of xp to an member. It re-calculate the level for the final amount of xp.
 
 ```js
 const member = await mongoeconomy.attributeXp(<MemberId>, <GuildId>, <Amount>)
@@ -117,7 +117,7 @@ Promise<Boolean>
 
 **attributeLevel()**
 
-Add an amount of level to an user. It re-calculate the level for the final amount of xp.
+Add an amount of level to an member. It re-calculate the level for the final amount of xp.
 
 ```js
 const member = await mongoeconomy.attributeLevel(<MemberId>, <GuildId>, <Amount>)
@@ -126,7 +126,7 @@ const member = await mongoeconomy.attributeLevel(<MemberId>, <GuildId>, <Amount>
 > You can also use it to substract an amount.
 - Expected output :
 ``
-Promise<Boolean>
+Promise<Object>
 ``
 
 **fetchMember()**
@@ -138,7 +138,7 @@ const member = await mongoeconomy.fetchMember(<MemberId>, <GuildId>)
 ```
 - Expected output :
 ``
-Promise<Boolean>
+Promise<Object>
 ``
 
 **getLeaderBoard()**
@@ -164,7 +164,33 @@ const rawData = await mongoeconomy.convertLeaderBoard(<Discord Client>, <RawData
 > **\<RawData\>** the getLeaderBoard() output
 - Expected output :
 ``
-Array [Objects]
+Array[Objects]
+``
+
+**setXp()**
+
+Set the xp of a member, reset the current amount an re-calculate the level
+
+```js
+const member = await mongoeconomy.setXp(<MemberId>, <GuildId>, <Amount>)
+```
+> **\<Amount\>** need to be a number.
+- Expected output :
+``
+Promise<Object>
+``
+
+**setLevel()**
+
+Set the level of a member, reset the current amount an re-calculate the xp
+
+```js
+const member = await mongoeconomy.setLevel(<MemberId>, <GuildId>, <Amount>)
+```
+> **\<Amount\>** need to be a number.
+- Expected output :
+``
+Promise<Object>
 ``
 
 # Full bot example using all the methods
@@ -189,45 +215,57 @@ bot.on("message", async (message) => {
     if (!message.guild) return;
     if (message.author.bot) return;
 
-    // Add a random ammount of xp to at every messages, check if the user has levlled up
+    var prefix = "*"
+
+    // Add a random ammount of xp to at every messages, check if the member has levlled up
     var randomXp = Math.floor(Math.random() * 49) + 1;
     var hasLevelUp = await mongoeconomy.attributeXp(message.member.id, message.guild.id, randomXp);
     if (hasLevelUp) {
         // fetch the member
         // return false if there is no entry for the member
-        let user = await mongoeconomy.fetchMember(message.member.id, message.guild.id);
-        message.channel.send(`${message.member}, congratulations! You have reached the level **${user.level}**. :tada:`);
+        let member = await mongoeconomy.fetchMember(message.member.id, message.guild.id);
+        message.channel.send(`${message.member}, congratulations! You have reached the level **${member.level}**. :tada:`);
     }
 
     // Create an entry in the database for the member
     // return false if there is already an entry
-    if (message.content === "*create") {
+    if (message.content === prefix + "create") {
         let created = await mongoeconomy.createMember(message.member.id, message.guild.id);
         message.reply(`Your entry has been created\n${created}.`);
     }
 
     // Delete the entry in the database for the member
     // return false if there is no entry for the member
-    if (message.content === "*delete") {
+    if (message.content === prefix + "delete") {
         let deleted = mongoeconomy.deleteMember(message.member.id, message.guild.id);
         console.log(deleted);
         message.reply(`Your entry has been deleted\n${deleted}.`);
     }
 
     // Get your current xp and level
-    if (message.content === "*xp") {
+    if (message.content === prefix + "xp") {
         let mention = message.mentions.members.first() ? message.mentions.members.first() : message.member;
-        let user = await mongoeconomy.fetchMember(mention.id, message.guild.id);
-        if (!user) return message.channel.send("You haven't earned any xp or level...")
-        message.channel.send(`You have ${user.xp} points and you are at level ${user.level}.`)
+        let member = await mongoeconomy.fetchMember(mention.id, message.guild.id);
+        if (!member) return message.channel.send("You haven't earned any xp or level...")
+        message.channel.send(`You have ${member.xp} points and you are at level ${member.level}.`)
     }
 
-    if (message.content === "*leaderboard") {
+    if (message.content === prefix + "leaderboard") {
         let raw = await mongoeconomy.getLeaderBoard(message.guild.id, 10);
         let data = await mongoeconomy.convertLeaderBoard(bot, raw);
 
-        let leaderboard = data.map(e => `${e.position}. ${e.username}#${e.discriminator}\nLevel: ${e.level}\nXP: ${e.xp.toLocaleString()}\n`);
+        let leaderboard = data.map(e => `${e.position}. ${e.membername}#${e.discriminator}\nLevel: ${e.level}\nXP: ${e.xp.toLocaleString()}\n`);
         message.channel.send(leaderboard)
+    }
+
+    if (message.content === prefix + "setxp") {
+        let member = await mongoeconomy.setXp(message.member.id, message.guild.id, 100)
+        message.channel.send(`You are now at level ${member.level} with ${member.xp} xp`)
+    }
+
+    if (message.content === prefix + "setlevel") {
+        let member = await mongoeconomy.setLevel(message.member.id, message.guild.id, 100)
+        message.channel.send(`You are now at level ${member.level} with ${member.xp} xp`)
     }
 })
 
