@@ -37,7 +37,7 @@ class DiscordMongoDBEconomy {
     }
 
     /**
-     * Create an user if there are no entry in the database for him
+     * Create a member if there are no entry in the database for him
      * @param {string} memberId - The id of the member
      * @param {string} guildId - The id of the guild
      */
@@ -56,13 +56,13 @@ class DiscordMongoDBEconomy {
             guildID: guildId
         });
 
-        await create.save().catch(e => console.log(`An error occured while creating the user : ${e}`));
+        await create.save().catch(e => console.log(`An error occured while creating the member : ${e}`));
 
         return create;
     }
 
     /**
-     * Delete an user if there is an entry in the database for him
+     * Delete a member if there is an entry in the database for him
      * @param {string} memberId - The id of the member
      * @param {string} guildId - The id of the guild
      */
@@ -79,13 +79,13 @@ class DiscordMongoDBEconomy {
         await MemberData.findOneAndDelete({
             memberID: memberId,
             guildID: guildId
-        }).catch(e => console.log(`An error occured while deleting the user : ${e}`));
+        }).catch(e => console.log(`An error occured while deleting the member : ${e}`));
 
         return member;
     }
 
     /**
-     * Add a 
+     * Add an amount of xp
      * @param {string} memberId - The id of the member
      * @param {string} guildId - The id of the guild
      * @param {number} xp - Amount of xp to add or substract at every messages
@@ -124,7 +124,7 @@ class DiscordMongoDBEconomy {
     }
 
     /**
-     * Add a 
+     * Add an amount of levels
      * @param {string} memberId - The id of the member
      * @param {string} guildId - The id of the guild
      * @param {number} levelToAttribute - Amount of level to add or substract
@@ -145,7 +145,7 @@ class DiscordMongoDBEconomy {
         member.level += levelToAttribute;
         member.xp = member.level * member.level * 100;
 
-        member.save().catch(e => console.log(`An error occured while saving the user : ${e}`));
+        member.save().catch(e => console.log(`An error occured while saving the member : ${e}`));
 
         return member;
     }
@@ -211,6 +211,32 @@ class DiscordMongoDBEconomy {
             discriminator: DJSLib.startsWith("12") ? (client.users.cache.get(key.memberID) ? client.users.cache.get(key.memberID).discriminator : "0000") : (client.users.get(key.memberID) ? client.users.get(key.memberID).discriminator : "0000"),
         }));
         return convertedArray;
+    }
+
+    /**
+     * Set an amount of xp for a member (reset the current xp)
+     * @param {string} memberId - The id of the member
+     * @param {string} guildId - The id of the guild
+     * @param {number} levelToAttribute - Amount of xp to set
+     */
+    static async setXp(memberId, guildId, xpToSet) {
+        if (!memberId) throw new TypeError("A member id must be specified.");
+        if (!guildId) throw new TypeError("A guild id must be specified.");
+        if (!xpToSet) throw new TypeError("An amount of xp must be specified.");
+        if (xpToSet < 1) throw new TypeError("The given xp amount cannot be lower than 1.")
+        if (isNaN(xpToSet)) throw new TypeError("The given xp amount must be a number.")
+
+        let member = await levels.findOne({
+            memberID: memberId,
+            guildID: guildId
+        });
+
+        if (!member) return false;
+
+        member.xp = xpToSet;
+        member.level = Math.floor(0.1 * Math.sqrt(member.xp));
+
+        member.save().catch(e => console.log(`An error occured while saving the member : ${e}`));
     }
 }
 
