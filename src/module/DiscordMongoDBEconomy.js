@@ -136,7 +136,7 @@ class DiscordMongoDBEconomy {
         if (levelToAttribute < 1) throw new TypeError("The given level amount cannot be lower than 1.")
         if (isNaN(levelToAttribute)) throw new TypeError("The given level amount must be a number.")
 
-        let member = await levels.findOne({
+        let member = await MemberData.findOne({
             memberID: memberId,
             guildID: guildId
         });
@@ -217,7 +217,7 @@ class DiscordMongoDBEconomy {
      * Set an amount of xp for a member (reset the current xp)
      * @param {string} memberId - The id of the member
      * @param {string} guildId - The id of the guild
-     * @param {number} levelToAttribute - Amount of xp to set
+     * @param {number} xpToSet - Amount of xp to set
      */
     static async setXp(memberId, guildId, xpToSet) {
         if (!memberId) throw new TypeError("A member id must be specified.");
@@ -226,7 +226,7 @@ class DiscordMongoDBEconomy {
         if (xpToSet < 1) throw new TypeError("The given xp amount cannot be lower than 1.")
         if (isNaN(xpToSet)) throw new TypeError("The given xp amount must be a number.")
 
-        let member = await levels.findOne({
+        let member = await MemberData.findOne({
             memberID: memberId,
             guildID: guildId
         });
@@ -237,6 +237,8 @@ class DiscordMongoDBEconomy {
         member.level = Math.floor(0.1 * Math.sqrt(member.xp));
 
         member.save().catch(e => console.log(`An error occured while saving the member : ${e}`));
+
+        return member
     }
 }
 
