@@ -13,6 +13,12 @@ const guildMember = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    
+    totalXp: {
+        type: Number,
+        default: 0
+    },
+    
     level: {
         type: Number,
         default: 0,
