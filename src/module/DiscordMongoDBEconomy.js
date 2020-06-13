@@ -170,8 +170,14 @@ class DiscordMongoDBEconomy {
             guildID: guildId
         });
         if (!member) return false;
-
-        return member;
+        
+        let xp = {
+            xpNeeded : member.level * 100 - member.levelXp
+        }
+       
+        let memberData = {...member,...xp}
+        
+        return memberData;
     }
 
     /**
