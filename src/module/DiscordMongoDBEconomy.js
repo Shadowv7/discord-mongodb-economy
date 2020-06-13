@@ -106,7 +106,8 @@ class DiscordMongoDBEconomy {
             let newUser = new MemberData({
                 memberID: memberId,
                 guildID: guildId,
-                xp: xp,
+                totalXp: xp,
+                levelXp: xp,
                 level: Math.floor(0.1 * Math.sqrt(xp))
             });
 
@@ -115,7 +116,10 @@ class DiscordMongoDBEconomy {
             return (Math.floor(0.1 * Math.sqrt(xp)) > 0);
         };
 
-        member.xp += xp;
+        const levelXp = member.totalXp - ((member.level - 1) * 100)
+        
+        member.totalXp += xp;
+        member.levelXp = levelXp
         member.level = Math.floor(0.1 * Math.sqrt(member.xp));
 
         await member.save().catch(e => console.log(`An error occured while saving the user : ${e}`));
@@ -141,10 +145,12 @@ class DiscordMongoDBEconomy {
             guildID: guildId
         });
         if (!member) return false;
-
+        
         member.level += levelToAttribute;
-        member.xp = member.level * member.level * 100;
-
+        const levelXp = member.totalXp - ((member.level - 1) * 100)
+        member.levelXp = levelXp
+        member.totalXp = member.level * member.level * 100;
+        
         member.save().catch(e => console.log(`An error occured while saving the member : ${e}`));
 
         return member;
@@ -182,7 +188,7 @@ class DiscordMongoDBEconomy {
         var table = await MemberData.find({
             guildID: guildId
         }).sort([
-            ['xp', 'descending']
+            ['totalXp', 'descending']
         ]).exec();
 
         return table.slice(0, limit);
@@ -204,7 +210,8 @@ class DiscordMongoDBEconomy {
         rawLeaderBoard.map(key => convertedArray.push({
             guildID: key.guildID,
             memberID: key.memberID,
-            xp: key.xp,
+            totalXp: key.totalXp,
+            levelXp: key.levelXp,
             level: key.level,
             position: (rawLeaderBoard.findIndex(i => i.guildID === key.guildID && i.memberID === key.memberID) + 1),
             username: DJSLib.startsWith("12") ? (client.users.cache.get(key.memberID) ? client.users.cache.get(key.memberID).username : "Unknown") : (client.users.get(key.memberID) ? client.users.get(key.memberID).username : "Unknown"),
@@ -233,8 +240,10 @@ class DiscordMongoDBEconomy {
 
         if (!member) return false;
 
-        member.xp = xpToSet;
+        member.totalXp = xpToSet;
         member.level = Math.floor(0.1 * Math.sqrt(member.xp));
+        const levelXp = member.totalXp - ((member.level - 1) * 100)
+        member.levelXp = levelXp
 
         member.save().catch(e => console.log(`An error occured while saving the member : ${e}`));
 
@@ -261,8 +270,10 @@ class DiscordMongoDBEconomy {
         if (!member) return false;
     
         member.level = levelToSet;
-        member.xp = levelToSet * levelToSet * 100;
-    
+        member.totalXp = levelToSet * levelToSet * 100;
+        const levelXp = member.totalXp - ((member.level - 1) * 100)
+        member.levelXp = levelXp
+        
         member.save().catch(e => console.log(`Failed to set level: ${e}`) );
     
         return member;
