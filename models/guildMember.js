@@ -9,9 +9,13 @@ const guildMember = new mongoose.Schema({
         type: String,
         default: null,
     },
-    xp: {
+    totalXp: {
         type: Number,
         default: 0,
+    },
+    levelXp: {
+        type: Number,
+        default: 0
     },
     level: {
         type: Number,
